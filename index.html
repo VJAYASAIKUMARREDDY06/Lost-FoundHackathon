@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Lost & Found Portal</title>
+    <style>
+        /* CSS Variables from globals.css */
+        :root {
+            --font-size: 16px;
+            --background: #fefdf8;
+            --foreground: #451a03;
+            --card: #fefdf8;
+            --card-foreground: #451a03;
+            --popover: #fefdf8;
+            --popover-foreground: #451a03;
+            --primary: #d97706;
+            --primary-foreground: #fefdf8;
+            --secondary: #fef3c7;
+            --secondary-foreground: #92400e;
+            --muted: #f7f0e5;
+            --muted-foreground: #78716c;
+            --accent: #fed7aa;
+            --accent-foreground: #9a3412;
+            --destructive: #dc2626;
+            --destructive-foreground: #ffffff;
+            --border: rgba(217, 119, 6, 0.2);
+            --input: transparent;
+            --input-background: #fef9f3;
+            --switch-background: #e4d4c4;
+            --ring: #f59e0b;
+            --radius: 0.625rem;
+            --success: #16a34a;
+            --success-foreground: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: var(--font-size);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            background-color: var(--background);
+            color: var(--foreground);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            margin-top: -4px;
+        }
+
+        .nav {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--muted-foreground);
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+            background: var(--accent);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            text-align: right;
+            font-size: 0.875rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .user-email {
+            color: var(--muted-foreground);
+            font-size: 0.75rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--muted-foreground);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius);
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            color: var(--destructive);
+            background: var(--muted);
+        }
+
+        /* Main Content */
+        .main {
+            padding: 2rem 0;
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--card-foreground);
+        }
+
+        .card-description {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--foreground);
+            font-size: 0.875rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--input-background);
+            color: var(--foreground);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-primary:hover {
+            background: #b45309;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--success-foreground);
+        }
+
+        .btn-danger {
+            background: var(--destructive);
+            color: var(--destructive-foreground);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            background: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--accent);
+        }
+
+        .upload-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--secondary);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--secondary-foreground);
+        }
+
+        .upload-text {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .item-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            background: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted-foreground);
+            font-size: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-content {
+            padding: 1.5rem;
+        }
+
+        .item-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--card-foreground);
+        }
+
+        .item-description {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .item-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .item-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .badge-pending {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--card-foreground);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--muted-foreground);
+            padding: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fed7aa;
+        }
+
+        .alert-info {
+            background: #e0e7ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+        }
+
+        /* Activity Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.875rem;
+            top: 1rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .timeline-date {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content {
+            font-size: 0.875rem;
+            color: var(--foreground);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .nav {
+                gap: 1rem;
+            }
+
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .user-details {
+                display: none;
+            }
+
+            .header-content {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Status indicators */
+        .status-active {
+            color: var(--success);
+        }
+
+        .status-claimed {
+            color: var(--primary);
+        }
+
+        .status-pending {
+            color: #3730a3;
+        }
+
+        .status-expired {
+            color: var(--muted-foreground);
+        }
+
+        /* Profile image preview */
+        .profile-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--border);
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Security questions */
+        .question-group {
+            background: var(--muted);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Table styles */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--foreground);
+            background: var(--muted);
+        }
+
+        .table td {
+            color: var(--muted-foreground);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">🔍</div>
+                    <div>
+                        <h1>Campus Lost & Found</h1>
+                        <div class="logo-subtitle">College Management System</div>
+                    </div>
+                </div>
+
+                <nav id="mainNavigation" class="hidden">
+                    <ul class="nav" id="mainNav">
+                        <li><a href="#" class="nav-link active" data-page="dashboard">Dashboard</a></li>
+                        <li><a href="#" class="nav-link" data-page="found">Found Items</a></li>
+                        <li><a href="#" class="nav-link" data-page="lost">Lost Requests</a></li>
+                        <li><a href="#" class="nav-link" data-page="profile">Profile</a></li>
+                        <li id="adminNavItem" class="hidden"><a href="#" class="nav-link" data-page="admin">Admin</a></li>
+                    </ul>
+                </nav>
+
+                <div class="user-info hidden" id="userInfo">
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Student</div>
+                        <div class="user-email" id="userEmail">student@college.edu</div>
+                    </div>
+                    <div class="avatar" id="userAvatar">S</div>
+                    <button class="logout-btn" onclick="logout()">🚪</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main container">
+        <!-- Login Section -->
+        <div id="login" class="page-section active">
+            <div class="card" style="max-width: 500px; margin: 2rem auto;">
+                <div class="card-header">
+                    <h2 class="card-title">Welcome to Campus Lost & Found</h2>
+                    <p class="card-description">Sign in with your college email to get started</p>
+                </div>
+                <div class="card-content">
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="loginEmail">College Email</label>
+                            <input type="email" id="loginEmail" class="form-input" placeholder="yourname@college.edu" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" class="form-input" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Sign In
+                        </button>
+                    </form>
+                    
+                    <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        <p style="color: var(--muted-foreground); font-size: 0.875rem;">
+                            Don't have an account? <a href="#" onclick="showRegistration()" style="color: var(--primary);">Register here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration Section -->
+        <div id="registration" class="page-section">
+            <div class="card" style="max-width: 700px; margin: 2rem auto;">
+                <div class="card-header">
+                    <h2 class="card-title">Create Account</h2>
+                    <p class="card-description">Register with your college credentials (Admin approval required)</p>
+                </div>
+                <div class="card-content">
+                    <form id="registrationForm" onsubmit="handleRegistration(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="regEmail">College Email</label>
+                                <input type="email" id="regEmail" class="form-input" placeholder="yourname@college.edu" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="regPassword">Password</label>
+                                <input type="password" id="regPassword" class="form-input" placeholder="Create password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="regName">Full Name</label>
+                                <input type="text" id="regName" class="form-input" placeholder="Your full name" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="regRollNo">Roll Number</label>
+                                <input type="text" id="regRollNo" class="form-input" placeholder="Your roll number" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label class="form-label" for="regYear">Year</label>
+                                <select id="regYear" class="form-select" required>
+                                    <option value="">Select Year</option>
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="regSection">Section</label>
+                                <input type="text" id="regSection" class="form-input" placeholder="e.g., A, B, C" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="regDepartment">Department</label>
+                                <select id="regDepartment" class="form-select" required>
+                                    <option value="">Select Department</option>
+                                    <option value="CSE">Computer Science</option>
+                                    <option value="ECE">Electronics</option>
+                                    <option value="ME">Mechanical</option>
+                                    <option value="CE">Civil</option>
+                                    <option value="EE">Electrical</option>
+                                    <option value="IT">Information Technology</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">College ID Card</label>
+                            <div class="upload-area" onclick="document.getElementById('idUpload').click()">
+                                <div class="upload-icon">🆔</div>
+                                <div class="upload-text">Click to upload ID card</div>
+                                <div class="upload-subtext">PNG, JPG up to 5MB</div>
+                            </div>
+                            <input type="file" id="idUpload" class="hidden" accept="image/*" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Create Account (Pending Admin Approval)
+                        </button>
+                    </form>
+                    
+                    <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        <p style="color: var(--muted-foreground); font-size: 0.875rem;">
+                            Already have an account? <a href="#" onclick="showLogin()" style="color: var(--primary);">Sign in here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="page-section">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Welcome Back!</h2>
+                            <p style="color: var(--muted-foreground);">Track your lost items, help others find their belongings.</p>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-primary" onclick="openFoundModal()">
+                                📸 Report Found Item
+                            </button>
+                            <button class="btn btn-outline" onclick="openLostModal()">
+                                🔍 Request Lost Item
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="myFoundItems">0</div>
+                    <div class="stat-label">Items I Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="myLostRequests">0</div>
+                    <div class="stat-label">My Lost Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="itemsClaimed">0</div>
+                    <div class="stat-label">Items Claimed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="helpedStudents">0</div>
+                    <div class="stat-label">Students Helped</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Activity</h3>
+                </div>
+                <div class="card-content">
+                    <div id="recentActivity" class="timeline">
+                        <!-- Activity items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Found Items Section -->
+        <div id="found" class="page-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Found Items</h2>
+                    <p style="color: var(--muted-foreground);">Browse items found by students or report something you found</p>
+                </div>
+                <button class="btn btn-primary" onclick="openFoundModal()">
+                    📸 Report Found Item
+                </button>
+            </div>
+
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-content">
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <input type="text" id="foundSearchInput" class="form-input" placeholder="Search items, descriptions, or locations..." oninput="filterFoundItems()">
+                        </div>
+                        <div>
+                            <select id="foundCategoryFilter" class="form-select" onchange="filterFoundItems()">
+                                <option value="">All Categories</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Bags">Bags & Backpacks</option>
+                                <option value="Books">Books & Stationery</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="IDs">ID Cards & Documents</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="foundStatusFilter" class="form-select" onchange="filterFoundItems()">
+                                <option value="">All Status</option>
+                                <option value="available">Available</option>
+                                <option value="claimed">Claimed</option>
+                                <option value="pending">Pending Claim</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="items-grid" id="foundItemsGrid">
+                <!-- Items will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Lost Requests Section -->
+        <div id="lost" class="page-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Lost Item Requests</h2>
+                    <p style="color: var(--muted-foreground);">Search for your lost items or create a new request</p>
+                </div>
+                <button class="btn btn-primary" onclick="openLostModal()">
+                    🔍 Create Lost Request
+                </button>
+            </div>
+
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-value" id="activeRequests">0</div>
+                    <div class="stat-label">Active Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="foundRequests">0</div>
+                    <div class="stat-label">Items Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="highPriorityRequests">0</div>
+                    <div class="stat-label">High Priority</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="rewardRequests">0</div>
+                    <div class="stat-label">With Rewards</div>
+                </div>
+            </div>
+
+            <div class="items-grid" id="lostItemsGrid">
+                <!-- Items will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile" class="page-section">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h2 class="card-title">User Profile</h2>
+                    <p class="card-description">Manage your account details and view your activity history</p>
+                </div>
+                <div class="card-content">
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                        <div style="text-align: center;">
+                            <img id="profileImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23d97706'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='40' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E" alt="Profile" class="profile-preview">
+                            <button class="btn btn-outline btn-sm" style="margin-top: 1rem;" onclick="document.getElementById('profilePicUpload').click()">
+                                Change Photo
+                            </button>
+                            <input type="file" id="profilePicUpload" class="hidden" accept="image/*" onchange="updateProfilePicture(event)">
+                        </div>
+                        <div>
+                            <form id="profileForm" onsubmit="updateProfileForm(event)">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label" for="profileName">Full Name</label>
+                                        <input type="text" id="profileName" class="form-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="profileEmail">Email</label>
+                                        <input type="email" id="profileEmail" class="form-input" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-row-3">
+                                    <div class="form-group">
+                                        <label class="form-label" for="profileRollNo">Roll Number</label>
+                                        <input type="text" id="profileRollNo" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="profileYear">Year</label>
+                                        <select id="profileYear" class="form-select">
+                                            <option value="">Select Year</option>
+                                            <option value="1">1st Year</option>
+                                            <option value="2">2nd Year</option>
+                                            <option value="3">3rd Year</option>
+                                            <option value="4">4th Year</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="profileSection">Section</label>
+                                        <input type="text" id="profileSection" class="form-input" placeholder="e.g., A, B, C">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="profileDepartment">Department</label>
+                                    <select id="profileDepartment" class="form-select">
+                                        <option value="">Select Department</option>
+                                        <option value="CSE">Computer Science</option>
+                                        <option value="ECE">Electronics</option>
+                                        <option value="ME">Mechanical</option>
+                                        <option value="CE">Civil</option>
+                                        <option value="EE">Electrical</option>
+                                        <option value="IT">Information Technology</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="profilePhone">Phone Number</label>
+                                    <input type="tel" id="profilePhone" class="form-input" placeholder="Your contact number">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">My Found Items</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="myFoundItemsList">
+                            <!-- User's found items will be listed here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">My Lost Requests</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="myLostRequestsList">
+                            <!-- User's lost requests will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div id="admin" class="page-section">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Admin Dashboard</h2>
+                <p style="color: var(--muted-foreground);">Manage users, items, and system settings</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pendingApprovals">0</div>
+                    <div class="stat-label">Pending Approvals</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalFoundItems">0</div>
+                    <div class="stat-label">Total Found Items</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="expiredItems">0</div>
+                    <div class="stat-label">Expired Items (90+ days)</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pending User Registrations</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="pendingRegistrations">
+                            <!-- Pending registrations will be listed here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Expired Items Management</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="expiredItemsList">
+                            <!-- Expired items will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">All Items Overview</h3>
+                </div>
+                <div class="card-content">
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Type</th>
+                                    <th>Reported By</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allItemsTable">
+                                <!-- Items will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Found Item Modal -->
+    <div id="foundModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Report Found Item</h3>
+                <button class="modal-close" onclick="closeFoundModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="foundForm" onsubmit="handleFoundItem(event)">
+                    <div class="form-group">
+                        <label class="form-label">Item Photo *</label>
+                        <div class="upload-area" onclick="document.getElementById('foundItemPhoto').click()">
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-text">Click to upload photo</div>
+                            <div class="upload-subtext">PNG, JPG up to 5MB</div>
+                        </div>
+                        <input type="file" id="foundItemPhoto" class="hidden" accept="image/*" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="foundItemName">Item Name *</label>
+                            <input type="text" id="foundItemName" class="form-input" placeholder="e.g., Samsung Galaxy Phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="foundItemCategory">Category *</label>
+                            <select id="foundItemCategory" class="form-select" required>
+                                <option value="">Select Category</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Bags">Bags & Backpacks</option>
+                                <option value="Books">Books & Stationery</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="IDs">ID Cards & Documents</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="foundItemDescription">Description *</label>
+                        <textarea id="foundItemDescription" class="form-textarea" placeholder="Describe the item in detail..." required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="foundLocation">Found Location *</label>
+                            <input type="text" id="foundLocation" class="form-input" placeholder="e.g., Library, Cafeteria" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="foundDate">Date Found *</label>
+                            <input type="date" id="foundDate" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="handoverLocation">Handover Location</label>
+                        <input type="text" id="handoverLocation" class="form-input" placeholder="Where can the owner collect this item?">
+                    </div>
+
+                    <h4 style="margin: 1.5rem 0 1rem 0; color: var(--foreground);">Security Questions (Optional)</h4>
+                    <p style="color: var(--muted-foreground); font-size: 0.875rem; margin-bottom: 1rem;">
+                        Add questions to verify the rightful owner. Only you will see the answers.
+                    </p>
+
+                    <div id="securityQuestions">
+                        <div class="question-group">
+                            <div class="question-header">
+                                <label class="form-label">Question 1</label>
+                                <button type="button" class="btn btn-sm btn-outline" onclick="removeQuestion(this)">Remove</button>
+                            </div>
+                            <input type="text" class="form-input security-question" placeholder="e.g., What color is the phone case?" style="margin-bottom: 0.5rem;">
+                            <input type="text" class="form-input security-answer" placeholder="Answer (hidden from claimants)">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addSecurityQuestion()" style="margin-bottom: 1.5rem;">
+                        + Add Another Question
+                    </button>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeFoundModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Report Found Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lost Item Modal -->
+    <div id="lostModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Request Lost Item</h3>
+                <button class="modal-close" onclick="closeLostModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="lostForm" onsubmit="handleLostRequest(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="lostItemName">Item Name *</label>
+                            <input type="text" id="lostItemName" class="form-input" placeholder="e.g., Black iPhone 12" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="lostItemCategory">Category *</label>
+                            <select id="lostItemCategory" class="form-select" required>
+                                <option value="">Select Category</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Bags">Bags & Backpacks</option>
+                                <option value="Books">Books & Stationery</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="IDs">ID Cards & Documents</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="lostItemDescription">Description *</label>
+                        <textarea id="lostItemDescription" class="form-textarea" placeholder="Describe your lost item in detail..." required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="lostLocation">Last Seen Location</label>
+                            <input type="text" id="lostLocation" class="form-input" placeholder="Where did you last see it?">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="lostDate">Date Lost</label>
+                            <input type="date" id="lostDate" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="contactPhone">Contact Phone *</label>
+                            <input type="tel" id="contactPhone" class="form-input" placeholder="Your phone number" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="priority">Priority</label>
+                            <select id="priority" class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="high">High (Important documents, etc.)</option>
+                                <option value="urgent">Urgent (ID cards, keys, etc.)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="rewardOffered">Reward Offered (Optional)</label>
+                        <input type="text" id="rewardOffered" class="form-input" placeholder="e.g., ₹500, Coffee treat, etc.">
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeLostModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claim Item Modal -->
+    <div id="claimModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Claim This Item</h3>
+                <button class="modal-close" onclick="closeClaimModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="claimItemDetails" style="margin-bottom: 2rem;">
+                    <!-- Item details will be populated here -->
+                </div>
+                
+                <form id="claimForm" onsubmit="handleClaim(event)">
+                    <div id="securityQuestionsContainer">
+                        <!-- Security questions will be populated here -->
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="claimDescription">Why do you think this is your item?</label>
+                        <textarea id="claimDescription" class="form-textarea" placeholder="Provide additional details to prove ownership..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="claimContact">Your Contact Number</label>
+                        <input type="tel" id="claimContact" class="form-input" placeholder="Phone number for coordination" required>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeClaimModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Claim</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let currentUser = null;
+        let foundItems = [];
+        let lostRequests = [];
+        let users = [];
+        let currentPage = 'login';
+
+        // Sample data for demonstration
+        const sampleFoundItems = [
+            {
+                id: 1,
+                name: "iPhone 12 Pro",
+                category: "Electronics",
+                description: "Black iPhone 12 Pro with cracked screen protector",
+                location: "Library - 3rd Floor",
+                date: "2024-01-15",
+                foundBy: "john@college.edu",
+                foundByName: "John Doe",
+                status: "available",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f0f0f0'/%3E%3Ctext x='100' y='100' text-anchor='middle' fill='%23666' font-size='20'%3E📱%3C/text%3E%3C/svg%3E",
+                securityQuestions: [
+                    { question: "What color is the phone case?", answer: "blue" },
+                    { question: "What's the wallpaper?", answer: "sunset" }
+                ],
+                handoverLocation: "Main Office Reception"
+            },
+            {
+                id: 2,
+                name: "Red Backpack",
+                category: "Bags",
+                description: "Red Jansport backpack with laptop compartment",
+                location: "Cafeteria",
+                date: "2024-01-14",
+                foundBy: "jane@college.edu",
+                foundByName: "Jane Smith",
+                status: "available",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f0f0f0'/%3E%3Ctext x='100' y='100' text-anchor='middle' fill='%23666' font-size='20'%3E🎒%3C/text%3E%3C/svg%3E",
+                securityQuestions: [],
+                handoverLocation: "Security Office"
+            }
+        ];
+
+        const sampleLostRequests = [
+            {
+                id: 1,
+                name: "Engineering Notebook",
+                category: "Books",
+                description: "Blue spiral notebook with mechanical engineering notes",
+                location: "Classroom B-204",
+                date: "2024-01-13",
+                requestedBy: "alice@college.edu",
+                requestedByName: "Alice Johnson",
+                priority: "high",
+                reward: "Coffee treat",
+                contact: "+1234567890",
+                status: "active"
+            }
+        ];
+
+        // Initialize application
+        function init() {
+            // Load sample data
+            foundItems = [...sampleFoundItems];
+            lostRequests = [...sampleLostRequests];
+            
+            // Check if user is logged in (in real app, check session/token)
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showLoggedInState();
+            }
+        }
+
+        // Authentication functions
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Simple validation (in real app, validate with server)
+            if (email && password) {
+                currentUser = {
+                    email: email,
+                    name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                    isAdmin: email.includes('admin'),
+                    approved: true,
+                    rollNo: '',
+                    year: '',
+                    section: '',
+                    department: '',
+                    phone: ''
+                };
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showLoggedInState();
+                showAlert('Login successful!', 'success');
+            } else {
+                showAlert('Please fill in all fields', 'error');
+            }
+        }
+
+        function handleRegistration(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            showAlert('Registration submitted! Awaiting admin approval.', 'info');
+            showLogin();
+        }
+
+        function showLoggedInState() {
+            // Hide login/registration sections
+            document.getElementById('login').classList.remove('active');
+            document.getElementById('registration').classList.remove('active');
+            
+            // Show navigation and user info
+            document.getElementById('mainNavigation').classList.remove('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            
+            // Update user info in header
+            document.getElementById('userName').textContent = currentUser.name || 'User';
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userAvatar').textContent = (currentUser.name || currentUser.email).charAt(0).toUpperCase();
+            
+            // Show admin nav if admin
+            if (currentUser.isAdmin) {
+                document.getElementById('adminNavItem').classList.remove('hidden');
+            }
+            
+            // Show dashboard and set as active
+            document.getElementById('dashboard').classList.add('active');
+            document.querySelector('.nav-link[data-page="dashboard"]').classList.add('active');
+            
+            currentPage = 'dashboard';
+            updateDashboard();
+            updateFoundItems();
+            updateLostRequests();
+        }
+
+        function showLogin() {
+            document.getElementById('registration').classList.remove('active');
+            document.getElementById('login').classList.add('active');
+        }
+
+        function showRegistration() {
+            document.getElementById('login').classList.remove('active');
+            document.getElementById('registration').classList.add('active');
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            
+            // Hide navigation and user info
+            document.getElementById('mainNavigation').classList.add('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('adminNavItem').classList.add('hidden');
+            
+            // Hide all sections and show login
+            document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
+            document.getElementById('login').classList.add('active');
+            
+            // Reset navigation active states
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector('.nav-link[data-page="dashboard"]').classList.add('active');
+            
+            currentPage = 'login';
+        }
+
+        // Navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.dataset.page;
+                    showPage(page);
+                    
+                    // Update active nav link
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            init();
+        });
+
+        function showPage(page) {
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(page).classList.add('active');
+            currentPage = page;
+            
+            if (page === 'dashboard') updateDashboard();
+            else if (page === 'found') updateFoundItems();
+            else if (page === 'lost') updateLostRequests();
+            else if (page === 'profile') updateProfile();
+            else if (page === 'admin') updateAdmin();
+        }
+
+        // Dashboard functions
+        function updateDashboard() {
+            const userFoundItems = foundItems.filter(item => item.foundBy === currentUser.email);
+            const userLostRequests = lostRequests.filter(item => item.requestedBy === currentUser.email);
+            const claimedItems = foundItems.filter(item => item.status === 'claimed');
+            
+            document.getElementById('myFoundItems').textContent = userFoundItems.length;
+            document.getElementById('myLostRequests').textContent = userLostRequests.length;
+            document.getElementById('itemsClaimed').textContent = claimedItems.length;
+            document.getElementById('helpedStudents').textContent = userFoundItems.filter(item => item.status === 'claimed').length;
+            
+            updateRecentActivity();
+        }
+
+        function updateRecentActivity() {
+            const activityContainer = document.getElementById('recentActivity');
+            const recentItems = [...foundItems, ...lostRequests]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+            
+            if (recentItems.length === 0) {
+                activityContainer.innerHTML = '<p style="color: var(--muted-foreground); text-align: center; padding: 2rem;">No recent activity. Start by reporting a found item or requesting a lost item.</p>';
+                return;
+            }
+            
+            activityContainer.innerHTML = recentItems.map(item => `
+                <div class="timeline-item">
+                    <div class="timeline-date">${formatDate(item.date)}</div>
+                    <div class="timeline-content">
+                        <strong>${item.name}</strong> - ${item.foundBy ? 'Found' : 'Lost request'} in ${item.location}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Found Items functions
+        function updateFoundItems() {
+            const grid = document.getElementById('foundItemsGrid');
+            const filteredItems = filterItems(foundItems, 'found');
+            
+            if (filteredItems.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--muted-foreground);">No found items match your search.</div>';
+                return;
+            }
+            
+            grid.innerHTML = filteredItems.map(item => `
+                <div class="item-card">
+                    <div class="item-image">
+                        ${item.image ? `<img src="${item.image}" alt="${item.name}">` : '📦'}
+                    </div>
+                    <div class="item-content">
+                        <div class="item-title">${item.name}</div>
+                        <div class="item-description">${item.description}</div>
+                        <div class="item-meta">
+                            <div class="item-meta-item">
+                                📍 ${item.location}
+                            </div>
+                            <div class="item-meta-item">
+                                📅 ${formatDate(item.date)}
+                            </div>
+                            <div class="item-meta-item">
+                                👤 Found by ${item.foundByName}
+                            </div>
+                            ${item.handoverLocation ? `<div class="item-meta-item">📦 Available at: ${item.handoverLocation}</div>` : ''}
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span class="badge badge-${getStatusColor(item.status)}">${getStatusText(item.status)}</span>
+                            <span class="badge">${item.category}</span>
+                        </div>
+                        <div class="item-actions">
+                            ${item.status === 'available' && item.foundBy !== currentUser.email ? 
+                                `<button class="btn btn-primary btn-sm" onclick="openClaimModal(${item.id})">Claim Item</button>` : ''}
+                            ${item.foundBy === currentUser.email ? 
+                                `<button class="btn btn-outline btn-sm" onclick="viewClaims(${item.id})">View Claims</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterFoundItems() {
+            updateFoundItems();
+        }
+
+        // Lost Requests functions
+        function updateLostRequests() {
+            const grid = document.getElementById('lostItemsGrid');
+            const activeRequests = lostRequests.filter(item => item.status === 'active').length;
+            const foundRequests = lostRequests.filter(item => item.status === 'found').length;
+            const highPriority = lostRequests.filter(item => item.priority === 'high' || item.priority === 'urgent').length;
+            const withRewards = lostRequests.filter(item => item.reward).length;
+            
+            document.getElementById('activeRequests').textContent = activeRequests;
+            document.getElementById('foundRequests').textContent = foundRequests;
+            document.getElementById('highPriorityRequests').textContent = highPriority;
+            document.getElementById('rewardRequests').textContent = withRewards;
+            
+            grid.innerHTML = lostRequests.map(item => `
+                <div class="item-card">
+                    <div class="item-image">
+                        ${getCategoryIcon(item.category)}
+                    </div>
+                    <div class="item-content">
+                        <div class="item-title">${item.name}</div>
+                        <div class="item-description">${item.description}</div>
+                        <div class="item-meta">
+                            <div class="item-meta-item">
+                                📍 Last seen: ${item.location || 'Unknown'}
+                            </div>
+                            <div class="item-meta-item">
+                                📅 ${formatDate(item.date)}
+                            </div>
+                            <div class="item-meta-item">
+                                👤 Requested by ${item.requestedByName}
+                            </div>
+                            ${item.reward ? `<div class="item-meta-item">🎁 Reward: ${item.reward}</div>` : ''}
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span class="badge badge-${getPriorityColor(item.priority)}">${getPriorityText(item.priority)}</span>
+                            <span class="badge">${item.category}</span>
+                        </div>
+                        <div class="item-actions">
+                            ${item.requestedBy !== currentUser.email ? 
+                                `<button class="btn btn-primary btn-sm" onclick="contactOwner('${item.contact}')">I Found This</button>` : 
+                                `<button class="btn btn-outline btn-sm" onclick="editRequest(${item.id})">Edit Request</button>`}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Profile functions
+        function updateProfile() {
+            if (!currentUser) return;
+            
+            document.getElementById('profileName').value = currentUser.name || '';
+            document.getElementById('profileEmail').value = currentUser.email || '';
+            document.getElementById('profileRollNo').value = currentUser.rollNo || '';
+            document.getElementById('profileSection').value = currentUser.section || '';
+            document.getElementById('profilePhone').value = currentUser.phone || '';
+            
+            // Set select field values
+            if (currentUser.year) {
+                document.getElementById('profileYear').value = currentUser.year;
+            }
+            if (currentUser.department) {
+                document.getElementById('profileDepartment').value = currentUser.department;
+            }
+            
+            updateUserItemLists();
+        }
+
+        function updateUserItemLists() {
+            const userFoundItems = foundItems.filter(item => item.foundBy === currentUser.email);
+            const userLostRequests = lostRequests.filter(item => item.requestedBy === currentUser.email);
+            
+            document.getElementById('myFoundItemsList').innerHTML = userFoundItems.length > 0 ? 
+                userFoundItems.map(item => `
+                    <div style="padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--muted-foreground);">${formatDate(item.date)} - ${item.status}</div>
+                    </div>
+                `).join('') : 
+                '<p style="color: var(--muted-foreground); text-align: center; padding: 1rem;">No found items reported</p>';
+            
+            document.getElementById('myLostRequestsList').innerHTML = userLostRequests.length > 0 ?
+                userLostRequests.map(item => `
+                    <div style="padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--muted-foreground);">${formatDate(item.date)} - ${item.status}</div>
+                    </div>
+                `).join('') :
+                '<p style="color: var(--muted-foreground); text-align: center; padding: 1rem;">No lost requests submitted</p>';
+        }
+
+        // Admin functions
+        function updateAdmin() {
+            if (!currentUser || !currentUser.isAdmin) return;
+            
+            document.getElementById('totalUsers').textContent = users.length + 10; // Sample data
+            document.getElementById('pendingApprovals').textContent = '3'; // Sample data
+            document.getElementById('totalFoundItems').textContent = foundItems.length;
+            
+            const expiredItems = foundItems.filter(item => {
+                const itemDate = new Date(item.date);
+                const daysDiff = (new Date() - itemDate) / (1000 * 60 * 60 * 24);
+                return daysDiff > 90 && item.status === 'available';
+            });
+            document.getElementById('expiredItems').textContent = expiredItems.length;
+            
+            updatePendingRegistrations();
+            updateExpiredItems();
+            updateAllItemsTable();
+        }
+
+        function updatePendingRegistrations() {
+            const container = document.getElementById('pendingRegistrations');
+            // Sample pending registrations
+            container.innerHTML = `
+                <div style="padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem;">
+                    <div style="font-weight: 600;">John Smith</div>
+                    <div style="font-size: 0.75rem; color: var(--muted-foreground);">john.smith@college.edu - CSE 2nd Year</div>
+                    <div style="margin-top: 0.5rem;">
+                        <button class="btn btn-success btn-sm" onclick="approveUser('john.smith@college.edu')">Approve</button>
+                        <button class="btn btn-danger btn-sm" onclick="rejectUser('john.smith@college.edu')">Reject</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateExpiredItems() {
+            const container = document.getElementById('expiredItemsList');
+            const expiredItems = foundItems.filter(item => {
+                const itemDate = new Date(item.date);
+                const daysDiff = (new Date() - itemDate) / (1000 * 60 * 60 * 24);
+                return daysDiff > 90 && item.status === 'available';
+            });
+            
+            container.innerHTML = expiredItems.length > 0 ?
+                expiredItems.map(item => `
+                    <div style="padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--muted-foreground);">Found ${formatDate(item.date)}</div>
+                        <div style="margin-top: 0.5rem;">
+                            <button class="btn btn-outline btn-sm" onclick="donateItem(${item.id})">Mark for Donation</button>
+                            <button class="btn btn-outline btn-sm" onclick="recycleItem(${item.id})">Mark for Recycling</button>
+                        </div>
+                    </div>
+                `).join('') :
+                '<p style="color: var(--muted-foreground); text-align: center; padding: 1rem;">No expired items</p>';
+        }
+
+        function updateAllItemsTable() {
+            const tableBody = document.getElementById('allItemsTable');
+            const allItems = [...foundItems.map(item => ({...item, type: 'Found'})), 
+                            ...lostRequests.map(item => ({...item, type: 'Lost Request'}))];
+            
+            tableBody.innerHTML = allItems.map(item => `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.type}</td>
+                    <td>${item.foundByName || item.requestedByName}</td>
+                    <td>${formatDate(item.date)}</td>
+                    <td><span class="badge badge-${getStatusColor(item.status)}">${getStatusText(item.status)}</span></td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="viewItemDetails(${item.id}, '${item.type}')">View</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteItem(${item.id}, '${item.type}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Modal functions
+        function openFoundModal() {
+            document.getElementById('foundModal').classList.add('active');
+            document.getElementById('foundDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        function closeFoundModal() {
+            document.getElementById('foundModal').classList.remove('active');
+            document.getElementById('foundForm').reset();
+            document.getElementById('securityQuestions').innerHTML = `
+                <div class="question-group">
+                    <div class="question-header">
+                        <label class="form-label">Question 1</label>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="removeQuestion(this)">Remove</button>
+                    </div>
+                    <input type="text" class="form-input security-question" placeholder="e.g., What color is the phone case?" style="margin-bottom: 0.5rem;">
+                    <input type="text" class="form-input security-answer" placeholder="Answer (hidden from claimants)">
+                </div>
+            `;
+        }
+
+        function openLostModal() {
+            document.getElementById('lostModal').classList.add('active');
+            document.getElementById('lostDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        function closeLostModal() {
+            document.getElementById('lostModal').classList.remove('active');
+            document.getElementById('lostForm').reset();
+        }
+
+        function openClaimModal(itemId) {
+            const item = foundItems.find(i => i.id === itemId);
+            if (!item) return;
+            
+            document.getElementById('claimModal').classList.add('active');
+            
+            document.getElementById('claimItemDetails').innerHTML = `
+                <div style="display: flex; gap: 1rem; align-items: center; padding: 1rem; background: var(--muted); border-radius: var(--radius);">
+                    <div style="font-size: 2rem;">${getCategoryIcon(item.category)}</div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1.1rem;">${item.name}</h4>
+                        <p style="margin: 0; color: var(--muted-foreground); font-size: 0.875rem;">${item.description}</p>
+                        <p style="margin: 0.25rem 0 0 0; color: var(--muted-foreground); font-size: 0.75rem;">Found at ${item.location} on ${formatDate(item.date)}</p>
+                    </div>
+                </div>
+            `;
+            
+            const questionsContainer = document.getElementById('securityQuestionsContainer');
+            if (item.securityQuestions && item.securityQuestions.length > 0) {
+                questionsContainer.innerHTML = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="margin-bottom: 1rem; color: var(--foreground);">Security Questions</h4>
+                        <p style="color: var(--muted-foreground); font-size: 0.875rem; margin-bottom: 1rem;">
+                            Please answer these questions to verify ownership:
+                        </p>
+                        ${item.securityQuestions.map((q, index) => `
+                            <div class="form-group">
+                                <label class="form-label">${q.question}</label>
+                                <input type="text" class="form-input security-answer-input" data-index="${index}" placeholder="Your answer" required>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                questionsContainer.innerHTML = '';
+            }
+            
+            document.getElementById('claimForm').onsubmit = function(e) {
+                e.preventDefault();
+                handleClaim(e, item);
+            };
+        }
+
+        function closeClaimModal() {
+            document.getElementById('claimModal').classList.remove('active');
+            document.getElementById('claimForm').reset();
+        }
+
+        // Form handlers
+        function handleFoundItem(event) {
+            event.preventDefault();
+            
+            const formData = {
+                id: foundItems.length + 1,
+                name: document.getElementById('foundItemName').value,
+                category: document.getElementById('foundItemCategory').value,
+                description: document.getElementById('foundItemDescription').value,
+                location: document.getElementById('foundLocation').value,
+                date: document.getElementById('foundDate').value,
+                foundBy: currentUser.email,
+                foundByName: currentUser.name,
+                status: 'available',
+                handoverLocation: document.getElementById('handoverLocation').value,
+                securityQuestions: []
+            };
+            
+            // Collect security questions
+            const questionInputs = document.querySelectorAll('#securityQuestions .security-question');
+            const answerInputs = document.querySelectorAll('#securityQuestions .security-answer');
+            
+            questionInputs.forEach((questionInput, index) => {
+                const question = questionInput.value.trim();
+                const answer = answerInputs[index].value.trim();
+                if (question && answer) {
+                    formData.securityQuestions.push({ question, answer: answer.toLowerCase() });
+                }
+            });
+            
+            foundItems.push(formData);
+            closeFoundModal();
+            updateFoundItems();
+            updateDashboard();
+            showAlert('Found item reported successfully!', 'success');
+        }
+
+        function handleLostRequest(event) {
+            event.preventDefault();
+            
+            const formData = {
+                id: lostRequests.length + 1,
+                name: document.getElementById('lostItemName').value,
+                category: document.getElementById('lostItemCategory').value,
+                description: document.getElementById('lostItemDescription').value,
+                location: document.getElementById('lostLocation').value,
+                date: document.getElementById('lostDate').value,
+                requestedBy: currentUser.email,
+                requestedByName: currentUser.name,
+                priority: document.getElementById('priority').value,
+                reward: document.getElementById('rewardOffered').value,
+                contact: document.getElementById('contactPhone').value,
+                status: 'active'
+            };
+            
+            lostRequests.push(formData);
+            closeLostModal();
+            updateLostRequests();
+            updateDashboard();
+            showAlert('Lost item request submitted successfully!', 'success');
+        }
+
+        function handleClaim(event, item) {
+            event.preventDefault();
+            
+            const securityAnswers = document.querySelectorAll('.security-answer-input');
+            let allAnswersCorrect = true;
+            
+            // Verify security questions if they exist
+            if (item.securityQuestions && item.securityQuestions.length > 0) {
+                securityAnswers.forEach((input, index) => {
+                    const userAnswer = input.value.toLowerCase().trim();
+                    const correctAnswer = item.securityQuestions[index].answer.toLowerCase().trim();
+                    if (userAnswer !== correctAnswer) {
+                        allAnswersCorrect = false;
+                    }
+                });
+            }
+            
+            if (!allAnswersCorrect) {
+                showAlert('Some security answers are incorrect. Please try again.', 'error');
+                return;
+            }
+            
+            // In a real app, this would notify the finder
+            const claimDescription = document.getElementById('claimDescription').value;
+            const claimContact = document.getElementById('claimContact').value;
+            
+            // Update item status
+            const foundItem = foundItems.find(i => i.id === item.id);
+            if (foundItem) {
+                foundItem.status = 'pending';
+                foundItem.claimedBy = currentUser.email;
+                foundItem.claimDescription = claimDescription;
+                foundItem.claimContact = claimContact;
+            }
+            
+            closeClaimModal();
+            updateFoundItems();
+            showAlert('Claim submitted successfully! The finder will be notified with your contact information.', 'success');
+        }
+
+        // Profile form handler
+        function updateProfileForm(event) {
+            event.preventDefault();
+            
+            // Get all form values
+            const updatedProfile = {
+                ...currentUser,
+                name: document.getElementById('profileName').value,
+                rollNo: document.getElementById('profileRollNo').value,
+                year: document.getElementById('profileYear').value,
+                section: document.getElementById('profileSection').value,
+                department: document.getElementById('profileDepartment').value,
+                phone: document.getElementById('profilePhone').value
+            };
+            
+            // Validate required fields
+            if (!updatedProfile.name.trim()) {
+                showAlert('Full name is required', 'error');
+                return;
+            }
+            
+            // Update current user
+            currentUser = updatedProfile;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Update header display
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+            
+            showAlert('Profile updated successfully!', 'success');
+        }
+
+        // Utility functions
+        function addSecurityQuestion() {
+            const container = document.getElementById('securityQuestions');
+            const questionCount = container.querySelectorAll('.question-group').length + 1;
+            
+            if (questionCount > 5) {
+                showAlert('Maximum 5 security questions allowed', 'warning');
+                return;
+            }
+            
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-group';
+            questionDiv.innerHTML = `
+                <div class="question-header">
+                    <label class="form-label">Question ${questionCount}</label>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="removeQuestion(this)">Remove</button>
+                </div>
+                <input type="text" class="form-input security-question" placeholder="Enter your question" style="margin-bottom: 0.5rem;">
+                <input type="text" class="form-input security-answer" placeholder="Answer (hidden from claimants)">
+            `;
+            container.appendChild(questionDiv);
+        }
+
+        function removeQuestion(button) {
+            button.closest('.question-group').remove();
+        }
+
+        function filterItems(items, type) {
+            const searchInput = document.getElementById(type + 'SearchInput');
+            const categoryFilter = document.getElementById(type + 'CategoryFilter');
+            const statusFilter = document.getElementById(type + 'StatusFilter');
+            
+            let filtered = [...items];
+            
+            if (searchInput && searchInput.value) {
+                const searchTerm = searchInput.value.toLowerCase();
+                filtered = filtered.filter(item => 
+                    item.name.toLowerCase().includes(searchTerm) ||
+                    item.description.toLowerCase().includes(searchTerm) ||
+                    item.location.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (categoryFilter && categoryFilter.value) {
+                filtered = filtered.filter(item => item.category === categoryFilter.value);
+            }
+            
+            if (statusFilter && statusFilter.value) {
+                filtered = filtered.filter(item => item.status === statusFilter.value);
+            }
+            
+            return filtered;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'Electronics': '📱',
+                'Bags': '🎒',
+                'Books': '📚',
+                'Clothing': '👕',
+                'Accessories': '⌚',
+                'IDs': '🆔',
+                'Others': '📦'
+            };
+            return icons[category] || '📦';
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'available': 'success',
+                'claimed': 'warning',
+                'pending': 'pending',
+                'expired': 'danger'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'available': 'Available',
+                'claimed': 'Claimed',
+                'pending': 'Pending Claim',
+                'expired': 'Expired'
+            };
+            return texts[status] || status;
+        }
+
+        function getPriorityColor(priority) {
+            const colors = {
+                'normal': 'secondary',
+                'high': 'warning',
+                'urgent': 'danger'
+            };
+            return colors[priority] || 'secondary';
+        }
+
+        function getPriorityText(priority) {
+            const texts = {
+                'normal': 'Normal',
+                'high': 'High Priority',
+                'urgent': 'Urgent'
+            };
+            return texts[priority] || 'Normal';
+        }
+
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; margin-left: auto;">&times;</button>
+            `;
+            alert.style.position = 'fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '1001';
+            alert.style.minWidth = '300px';
+            
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        function updateProfilePicture(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileImage').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Admin functions
+        function approveUser(email) {
+            showAlert(`User ${email} approved successfully!`, 'success');
+            updateAdmin();
+        }
+
+        function rejectUser(email) {
+            showAlert(`User ${email} rejected.`, 'warning');
+            updateAdmin();
+        }
+
+        function donateItem(itemId) {
+            const item = foundItems.find(i => i.id === itemId);
+            if (item) {
+                item.status = 'donated';
+                showAlert(`${item.name} marked for donation.`, 'success');
+                updateAdmin();
+            }
+        }
+
+        function recycleItem(itemId) {
+            const item = foundItems.find(i => i.id === itemId);
+            if (item) {
+                item.status = 'recycled';
+                showAlert(`${item.name} marked for recycling.`, 'success');
+                updateAdmin();
+            }
+        }
+
+        function contactOwner(phone) {
+            showAlert(`Contact the owner at: ${phone}`, 'info');
+        }
+
+        function viewClaims(itemId) {
+            showAlert('Claim management feature would open here', 'info');
+        }
+
+        function editRequest(itemId) {
+            showAlert('Edit request feature would open here', 'info');
+        }
+
+        function viewItemDetails(itemId, type) {
+            showAlert(`View details for ${type} item ${itemId}`, 'info');
+        }
+
+        function deleteItem(itemId, type) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                if (type === 'Found') {
+                    foundItems = foundItems.filter(item => item.id !== itemId);
+                    updateFoundItems();
+                } else {
+                    lostRequests = lostRequests.filter(item => item.id !== itemId);
+                    updateLostRequests();
+                }
+                updateAdmin();
+                showAlert('Item deleted successfully!', 'success');
+            }
+        }
+    </script>
+</body>
+</html>
